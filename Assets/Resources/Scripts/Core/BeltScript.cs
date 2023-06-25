@@ -17,7 +17,7 @@ namespace Resources.Scripts.Core
                     child.position -= new Vector3(0, 0, movementSpeed);
                     if (child.position.z <= 0.5)
                     {
-                        child.position = new Vector3(0, 0, 6.5f);
+                        child.position = new Vector3(0, 0, 6.45f);
                     }
                 }
             }

@@ -21,24 +21,28 @@ namespace Resources.Scripts.Core
             {
                 case "species":
                     _species = data.prop;
+                    if (data.prop.ToLower() == "any") _species = "";
                     break;
                 case "size":
                     _size = data.prop;
+                    if (data.prop.ToLower() == "any") _size = "";
                     break;
                 case "gender":
                     _gender = data.prop;
+                    if (data.prop.ToLower() == "any") _gender = "";
                     break;
                 case "age":
                     _age = data.prop;
+                    if (data.prop.ToLower() == "any") _age = "";
                     break;
                 case "kids":
-                    _kids = data.prop.ToLower() == "yes" ? "true" : "false";
+                    _kids = data.prop.ToLower() == "yes" ? "true" : "";
                     break;
                 case "animals":
-                    _animals = data.prop.ToLower() == "yes" ? "true" : "false";
+                    _animals = data.prop.ToLower() == "yes" ? "true" : "";
                     break;
                 case "trained":
-                    _trained = data.prop.ToLower() == "yes" ? "true" : "false";
+                    _trained = data.prop.ToLower() == "yes" ? "true" : "";
                     break;
                 case "zipcode":
                     _zipcode = data.prop;

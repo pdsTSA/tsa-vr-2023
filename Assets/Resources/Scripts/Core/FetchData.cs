@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using Newtonsoft.Json;
 using Resources.Scripts.Buttons;
 using Resources.Scripts.Container;
@@ -14,16 +15,11 @@ namespace Resources.Scripts.Core
 {
     public class FetchData : MonoBehaviour
     {
-        private const string BaseUrl = "https://phqsh.tech/vr/";
+        private const string BaseUrl = "https://phqsh.tech/vr/api";
         public PetConfigManager manager;
         public GameObject recipient;
         public ManagePetData dataManager;
-
-        /*private void Start()
-        {
-            Fetch();
-        }*/
-
+        
         public void Fetch()
         {
             StartCoroutine(FetchAnimalData());
@@ -44,14 +40,26 @@ namespace Resources.Scripts.Core
             var uwr = UnityWebRequest.Get(url);
             yield return uwr.SendWebRequest();
 
-            if (uwr.result is UnityWebRequest.Result.ConnectionError or UnityWebRequest.Result.DataProcessingError
-                or UnityWebRequest.Result.ProtocolError)
+            if (uwr.result is UnityWebRequest.Result.ConnectionError or UnityWebRequest.Result.DataProcessingError)
             {
                 //Do offline request logic here
             }
+            else if (uwr.result is UnityWebRequest.Result.ProtocolError)
+            {
+                // cursed, if error is 4xx-5xx
+                var data = new AnimalData.Root();
+                data.Animals = new List<AnimalData.Animal>();
+                data.Pagination = new AnimalData.Pagination();
+                data.Pagination.TotalCount = 0;
+                ExecuteEvents.Execute<IDisplayPetData>(
+                    recipient,
+                    new PetDisplayData(data),
+                    (a, b) => a.OnDisplayPet((PetDisplayData)b)
+                );
+            }
             else
             {
-                //Do online request logic here
+                // Do online request logic here
                 var data = JsonConvert.DeserializeObject<AnimalData.Root>(uwr.downloadHandler.text);
                 ExecuteEvents.Execute<IDisplayPetData>(
                     recipient,

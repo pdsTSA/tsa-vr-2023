@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Net;
 using Resources.Scripts.Container;
 using Resources.Scripts.Core;
 using Resources.Scripts.Events.Data;
@@ -22,6 +23,7 @@ namespace Resources.Scripts.Buttons
         public DoorMovement backDoor;
 
         private GameObject _currentAnimal;
+        private bool _currentInitialized = false;
 
         public TextMeshProUGUI petName;
         public TextMeshProUGUI petDescription;
@@ -29,9 +31,16 @@ namespace Resources.Scripts.Buttons
         public TextMeshProUGUI petMisc;
         public TextMeshProUGUI petContactLabel;
         public TextMeshProUGUI petContact;
+        public TextMeshProUGUI petCount;
+        
         [SerializeField] public Image petImage;
 
         public bool working = false;
+
+        public List<GameObject> dogModels;
+        public List<GameObject> catModels;
+
+        public Material baseColor;
 
         private void Start()
         {
@@ -45,6 +54,11 @@ namespace Resources.Scripts.Buttons
         {
             _animals = data.data.Animals;
             _index = 0;
+            if (_animals.Count == 0)
+            {
+                StartCoroutine(ClearStage());
+                return;
+            }
             StartCoroutine(DisplayAnimal());
         }
 
@@ -75,7 +89,7 @@ namespace Resources.Scripts.Buttons
             petMisc.text = "";
             petContact.text = "";
             petContactLabel.text = "";
-            
+
             //wait for a bit so it doesn't immediately check movement
             yield return new WaitForSeconds(0.2f);
 
@@ -84,17 +98,82 @@ namespace Resources.Scripts.Buttons
             {
                 yield return null;
             }
-            
+
+            GameObject sprite = null;
             // instantiate new animal just out of view
-            
+            if (animal.Species.ToLower() == "dog")
+            {
+                var spriteNum = animal.Gender.ToLower() == "female" ? 0 : 1;
+                sprite = Instantiate(dogModels[spriteNum], Vector3.zero, Quaternion.identity);
+                sprite.transform.Rotate(0, 180, 0);
+                var y = animal.Gender.ToLower() == "female" ? 0.5f : 0.6f;
+                switch (animal.Size.ToLower())
+                {
+                    case "small":
+                        sprite.transform.localScale = new Vector3(0.25f, 0.25f, 0.25f);
+                        sprite.transform.position = new Vector3(-0.75f, y * 0.25f, 0.2f);
+                        break;
+                    case "medium":
+                        sprite.transform.localScale = new Vector3(0.35f, 0.35f, 0.35f);
+                        sprite.transform.position = new Vector3(-0.75f, y * 0.35f, 0.2f);
+                        break;
+                    case "large":
+                        sprite.transform.localScale = new Vector3(0.45f, 0.45f, 0.45f);
+                        sprite.transform.position = new Vector3(-0.75f, y * 0.45f, 0.2f);
+                        break;
+                    case "xlarge":
+                        sprite.transform.localScale = new Vector3(0.55f, 0.55f, 0.55f);
+                        sprite.transform.position = new Vector3(-0.75f, y * 0.55f, 0.2f);
+                        break;
+                }
+
+                foreach(var rend in sprite.GetComponentsInChildren<Renderer>(true))
+                {
+                    rend.material = baseColor;
+                }
+            }
+            else if (animal.Species.ToLower() == "cat")
+            {
+                var spriteNum = animal.Gender.ToLower() == "female" ? 0 : 1;
+                sprite = Instantiate(catModels[spriteNum], Vector3.zero, Quaternion.identity);
+                sprite.transform.Rotate(0, 180, 0);
+                var y = animal.Gender.ToLower() == "female" ? 0.55f : 0.6f;
+                switch (animal.Size.ToLower())
+                {
+                    case "small":
+                        sprite.transform.localScale = new Vector3(0.25f, 0.25f, 0.25f);
+                        sprite.transform.position = new Vector3(-0.75f, y * 0.25f, 0.2f);
+                        break;
+                    case "medium":
+                        sprite.transform.localScale = new Vector3(0.3f, 0.3f, 0.3f);
+                        sprite.transform.position = new Vector3(-0.75f, y * 0.3f, 0.2f);
+                        break;
+                    case "large":
+                        sprite.transform.localScale = new Vector3(0.35f, 0.35f, 0.35f);
+                        sprite.transform.position = new Vector3(-0.75f, y * 0.35f, 0.2f);
+                        break;
+                    case "xlarge":
+                        sprite.transform.localScale = new Vector3(0.4f, 0.4f, 0.4f);
+                        sprite.transform.position = new Vector3(-0.75f, y * 0.4f, 0.2f);
+                        break;
+                }
+                
+                foreach(var rend in sprite.GetComponentsInChildren<Renderer>(true))
+                {
+                    rend.material = baseColor;
+                }
+            }   
             
             // turn belt on and move new and old animals same speed as belt
             belt.move = true;
             
-            // this should be a yield while animal is not in middle but animal isn't here yet
-            // so it's a sleep 2 sec
-            yield return new WaitForSeconds(2);
-            
+            while (sprite.transform.position.z > -1.5)
+            {
+                sprite.transform.position -= new Vector3(0, 0, belt.movementSpeed);
+                if (_currentInitialized) _currentAnimal.transform.position -= new Vector3(0, 0, belt.movementSpeed);
+                yield return null;
+            }
+
             // stop animal and belt, close doors
             belt.move = false;
             frontDoor.open = false;
@@ -110,8 +189,8 @@ namespace Resources.Scripts.Buttons
             }
             
             // render info text
-            petName.text = animal.Name;
-            petDescription.text = !string.IsNullOrEmpty(animal.Description) ? animal.Description : "Description not given";
+            petName.text = WebUtility.HtmlDecode(animal.Name);
+            petDescription.text = !string.IsNullOrEmpty(animal.Description) ? WebUtility.HtmlDecode(animal.Description) : "Description not given";
             petTags.text = "";
             if (animal.Tags is { Count: > 0 })
             {
@@ -124,21 +203,23 @@ namespace Resources.Scripts.Buttons
             }
             
             petMisc.text =
-                $"Gender- {animal.Gender}\n\n" +
-                $"Age- {animal.Age}\n\n" +
-                $"Breed- {(animal.Breeds.Unknown ? "Unknown" : animal.Breeds.Primary + (animal.Breeds.Secondary == null ? "" : $"/{animal.Breeds.Secondary}"))}\n\n" +
-                $"Color- {(string.IsNullOrEmpty(animal.Colors.Primary) ? "Not given" : animal.Colors.Primary)}\n\n" +
-                $"Spayed/Neutered- {(animal.Attributes.SpayedNeutered ? "Yes" : "No")}\n\n" +
-                $"Special Needs- {(animal.Attributes.SpecialNeeds ? "Yes" : "No")}\n\n" +
-                $"Fully vaccinated- {(animal.Attributes.ShotsCurrent ? "Yes" : "No")}";
+                WebUtility.HtmlDecode($"Gender- {animal.Gender}\n\n" +
+                                      $"Age- {animal.Age}\n\n" +
+                                      $"Breed- {(animal.Breeds.Unknown ? "Unknown" : animal.Breeds.Primary + (animal.Breeds.Secondary == null ? "" : $"/{animal.Breeds.Secondary}"))}\n\n" +
+                                      $"Color- {(string.IsNullOrEmpty(animal.Colors.Primary) ? "Not given" : animal.Colors.Primary)}\n\n" +
+                                      $"Spayed/Neutered- {(animal.Attributes.SpayedNeutered ? "Yes" : "No")}\n\n" +
+                                      $"Special Needs- {(animal.Attributes.SpecialNeeds ? "Yes" : "No")}\n\n" +
+                                      $"Fully vaccinated- {(animal.Attributes.ShotsCurrent ? "Yes" : "No")}");
             
             petContactLabel.text = "Contact Information";
             
-            petContact.text = $"Website-\n{(string.IsNullOrEmpty(animal.Url) ? "Not given" : animal.Url)}\n\n" +
-                              $"Email-\n{(string.IsNullOrEmpty(animal.Contact.Email) ? "Not given" : animal.Contact.Email)}\n\n" +
-                              $"Telephone-\n{(string.IsNullOrEmpty(animal.Contact.Phone) ? "Not given" : animal.Contact.Phone)}\n\n" +
-                              $"Shelter Location-\n{animal.Contact.Address.City}, {animal.Contact.Address.State} {animal.Contact.Address.Postcode}\n\n" +
-                              $"Distance From You-\n{animal.Distance}";
+            petContact.text = WebUtility.HtmlDecode($"Website-\n{(string.IsNullOrEmpty(animal.Url) ? "Not given" : animal.Url)}\n\n" +
+                                                    $"Email-\n{(string.IsNullOrEmpty(animal.Contact.Email) ? "Not given" : animal.Contact.Email)}\n\n" +
+                                                    $"Telephone-\n{(string.IsNullOrEmpty(animal.Contact.Phone) ? "Not given" : animal.Contact.Phone)}\n\n" +
+                                                    $"Shelter Location-\n{animal.Contact.Address.City}, {animal.Contact.Address.State} {animal.Contact.Address.Postcode}\n\n" +
+                                                    $"Distance From You-\n{animal.Distance} miles");
+
+            petCount.text = $"#{_index + 1} / {_animals.Count}";
 
             // make web request for image and render that too
             var www = UnityWebRequestTexture.GetTexture(animal.PrimaryPhotoCropped.Full);
@@ -156,7 +237,69 @@ namespace Resources.Scripts.Buttons
             }
             
             //delete old animal
+            if (_currentInitialized) Destroy(_currentAnimal);
+            _currentAnimal = sprite;
+            _currentInitialized = true;
+            working = false;
+        }
+        
+        // this is if there are no search results
+        private IEnumerator ClearStage()
+        {
+            if (_currentInitialized == false)
+            {
+                petName.text = "No Results Found";
+                yield break;
+            }
+            working = true;
+            
+            // turn on doors and move belt, also hide old data
+            frontDoor.open = true;
+            backDoor.open = true;
+            
+            petImage.enabled = false;
+            petName.text = "";
+            petTags.text = "";
+            petDescription.text = "";
+            petMisc.text = "";
+            petContact.text = "";
+            petContactLabel.text = "";
+            petCount.text = "";
+            
+            //wait for a bit so it doesn't immediately check movement
+            yield return new WaitForSeconds(0.2f);
 
+            // wait until doors open
+            while (backDoor.moving || frontDoor.moving)
+            {
+                yield return null;
+            }
+            
+            belt.move = true;
+            
+            while (_currentAnimal.transform.position.z > -3.7)
+            {
+                _currentAnimal.transform.position -= new Vector3(0, 0, belt.movementSpeed);
+                yield return null;
+            }
+
+            // stop animal and belt, close doors
+            belt.move = false;
+            frontDoor.open = false;
+            backDoor.open = false;
+            
+            //wait for a bit so it doesn't immediately check movement
+            yield return new WaitForSeconds(0.2f);
+            
+            //wait until doors close
+            while (backDoor.moving || frontDoor.moving)
+            {
+                yield return null;
+            }
+            
+            petName.text = "No Results Found";
+            Destroy(_currentAnimal);
+            _currentInitialized = false;
             working = false;
         }
     }
