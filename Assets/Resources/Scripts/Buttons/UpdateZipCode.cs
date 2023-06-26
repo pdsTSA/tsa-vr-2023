@@ -16,7 +16,7 @@ namespace Resources.Scripts.Buttons
 
         private void Update()
         {
-            if (_overlayKeyboard != null && _overlayKeyboard.status == TouchScreenKeyboard.Status.Done)
+            if (_overlayKeyboard != null && _overlayKeyboard.text.Length == 5)
             {
                 text.text = _overlayKeyboard.text;
                 _overlayKeyboard.active = false;
@@ -36,8 +36,7 @@ namespace Resources.Scripts.Buttons
 
         public void OpenKeyboard()
         {
-            debug.text = Random.Range(0, 1000).ToString();
-            _overlayKeyboard = TouchScreenKeyboard.Open(text.text, TouchScreenKeyboardType.NumberPad);
+            if (_overlayKeyboard == null) _overlayKeyboard = TouchScreenKeyboard.Open("", TouchScreenKeyboardType.NumberPad);
         }
     }
 }
