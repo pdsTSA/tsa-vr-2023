@@ -106,7 +106,7 @@ namespace Resources.Scripts.Buttons
                 var spriteNum = animal.Gender.ToLower() == "female" ? 0 : 1;
                 sprite = Instantiate(dogModels[spriteNum], Vector3.zero, Quaternion.identity);
                 sprite.transform.Rotate(0, 180, 0);
-                var y = animal.Gender.ToLower() == "female" ? 0.5f : 0.6f;
+                var y = animal.Gender.ToLower() == "female" ? 0.5f : 0.55f;
                 switch (animal.Size.ToLower())
                 {
                     case "small":
@@ -137,7 +137,7 @@ namespace Resources.Scripts.Buttons
                 var spriteNum = animal.Gender.ToLower() == "female" ? 0 : 1;
                 sprite = Instantiate(catModels[spriteNum], Vector3.zero, Quaternion.identity);
                 sprite.transform.Rotate(0, 180, 0);
-                var y = animal.Gender.ToLower() == "female" ? 0.55f : 0.6f;
+                var y = animal.Gender.ToLower() == "female" ? 0.6f : 0.55f;
                 switch (animal.Size.ToLower())
                 {
                     case "small":

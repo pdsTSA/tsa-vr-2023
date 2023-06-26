@@ -19,7 +19,12 @@ namespace Resources.Scripts.Core
         public PetConfigManager manager;
         public GameObject recipient;
         public ManagePetData dataManager;
-        
+
+        private void Start()
+        {
+            Fetch();
+        }
+
         public void Fetch()
         {
             StartCoroutine(FetchAnimalData());

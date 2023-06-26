@@ -11,21 +11,20 @@ namespace Resources.Scripts.Buttons
         private TouchScreenKeyboard _overlayKeyboard;
         public TextMeshProUGUI text;
         public GameObject handler;
+        public TextMeshProUGUI debug;
         private bool _dirty = false;
 
         private void Update()
         {
-            if (_overlayKeyboard is { active: true })
+            if (_overlayKeyboard != null && _overlayKeyboard.status == TouchScreenKeyboard.Status.Done)
             {
                 text.text = _overlayKeyboard.text;
+                _overlayKeyboard.active = false;
+                _overlayKeyboard = null;
                 _dirty = true;
             }
             else
             {
-                if (_overlayKeyboard != null)
-                {
-                    _overlayKeyboard.active = false;
-                }
                 if (!_dirty) return;
                 ExecuteEvents.Execute<IUpdatePetConfigHandler>(
                     handler, 
@@ -37,6 +36,7 @@ namespace Resources.Scripts.Buttons
 
         public void OpenKeyboard()
         {
+            debug.text = Random.Range(0, 1000).ToString();
             _overlayKeyboard = TouchScreenKeyboard.Open(text.text, TouchScreenKeyboardType.NumberPad);
         }
     }
