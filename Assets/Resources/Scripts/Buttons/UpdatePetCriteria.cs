@@ -14,6 +14,7 @@ namespace Resources.Scripts.Buttons
         private int _index = 0;
         public GameObject handler;
         public TextMeshProUGUI label;
+        public AudioSource buttonSfx;
 
         private void Start()
         {
@@ -26,6 +27,7 @@ namespace Resources.Scripts.Buttons
 
         public void CycleProperty()
         {
+            buttonSfx.Play();
             _index++;
             if (_index >= properties.Count) _index = 0;
             label.text = properties[_index];

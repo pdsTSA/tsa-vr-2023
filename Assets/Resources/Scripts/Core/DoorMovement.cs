@@ -7,7 +7,7 @@ namespace Resources.Scripts.Core
     {
         public bool open = false;
         public bool moving = false;
-        public float speed = 0.15f;
+        public float speed = 0.01f;
 
         // Update is called once per frame
         void Update()

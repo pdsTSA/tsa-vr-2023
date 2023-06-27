@@ -13,6 +13,7 @@ namespace Resources.Scripts.Buttons
         public GameObject handler;
         public TextMeshProUGUI debug;
         private bool _dirty = false;
+        public AudioSource buttonSfx;
 
         private void Update()
         {
@@ -22,7 +23,7 @@ namespace Resources.Scripts.Buttons
                 _overlayKeyboard.active = false;
                 _overlayKeyboard = null;
                 _dirty = true;
-            }
+            } 
             else
             {
                 if (!_dirty) return;
@@ -36,6 +37,7 @@ namespace Resources.Scripts.Buttons
 
         public void OpenKeyboard()
         {
+            buttonSfx.Play();
             if (_overlayKeyboard == null) _overlayKeyboard = TouchScreenKeyboard.Open("", TouchScreenKeyboardType.NumberPad);
         }
     }

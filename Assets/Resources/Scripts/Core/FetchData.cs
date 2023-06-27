@@ -19,14 +19,11 @@ namespace Resources.Scripts.Core
         public PetConfigManager manager;
         public GameObject recipient;
         public ManagePetData dataManager;
-
-        private void Start()
+        public AudioSource buttonSfx;
+        
+        public void Fetch() 
         {
-            Fetch();
-        }
-
-        public void Fetch()
-        {
+            buttonSfx.Play();
             StartCoroutine(FetchAnimalData());
         }
 

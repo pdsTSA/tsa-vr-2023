@@ -10,6 +10,7 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.Networking;
 using UnityEngine.UI;
+using Random = UnityEngine.Random;
 
 namespace Resources.Scripts.Buttons
 {
@@ -41,6 +42,10 @@ namespace Resources.Scripts.Buttons
         public List<GameObject> catModels;
 
         public Material baseColor;
+        
+        public AudioSource beltSfx;
+        public AudioSource buttonSfx;
+        public AudioSource doorSfx;
 
         private void Start()
         {
@@ -64,6 +69,7 @@ namespace Resources.Scripts.Buttons
 
         public void CycleAnimal()
         {
+            buttonSfx.Play();
             if (working) return;
             _index++;
             if (_index >= _animals.Count) _index = 0;
@@ -79,6 +85,7 @@ namespace Resources.Scripts.Buttons
             var animal = _animals[_index];
             
             // turn on doors and move belt, also hide old data
+            doorSfx.Play();
             frontDoor.open = true;
             backDoor.open = true;
             
@@ -98,6 +105,8 @@ namespace Resources.Scripts.Buttons
             {
                 yield return null;
             }
+            
+            doorSfx.Pause();
 
             GameObject sprite = null;
             // instantiate new animal just out of view
@@ -105,7 +114,7 @@ namespace Resources.Scripts.Buttons
             {
                 var spriteNum = animal.Gender.ToLower() == "female" ? 0 : 1;
                 sprite = Instantiate(dogModels[spriteNum], Vector3.zero, Quaternion.identity);
-                sprite.transform.Rotate(0, 180, 0);
+                sprite.transform.Rotate(0, -90, 0);
                 var y = animal.Gender.ToLower() == "female" ? 0.5f : 0.55f;
                 switch (animal.Size.ToLower())
                 {
@@ -136,7 +145,7 @@ namespace Resources.Scripts.Buttons
             {
                 var spriteNum = animal.Gender.ToLower() == "female" ? 0 : 1;
                 sprite = Instantiate(catModels[spriteNum], Vector3.zero, Quaternion.identity);
-                sprite.transform.Rotate(0, 180, 0);
+                sprite.transform.Rotate(0, -90, 0);
                 var y = animal.Gender.ToLower() == "female" ? 0.6f : 0.55f;
                 switch (animal.Size.ToLower())
                 {
@@ -164,8 +173,11 @@ namespace Resources.Scripts.Buttons
                 }
             }   
             
+            sprite.transform.Rotate(0, Random.Range(-45, 45), 0);
+            
             // turn belt on and move new and old animals same speed as belt
             belt.move = true;
+            beltSfx.Play();
             
             while (sprite.transform.position.z > -1.5)
             {
@@ -176,8 +188,10 @@ namespace Resources.Scripts.Buttons
 
             // stop animal and belt, close doors
             belt.move = false;
+            beltSfx.Stop();
             frontDoor.open = false;
             backDoor.open = false;
+            doorSfx.UnPause();
             
             //wait for a bit so it doesn't immediately check movement
             yield return new WaitForSeconds(0.2f);
@@ -187,6 +201,7 @@ namespace Resources.Scripts.Buttons
             {
                 yield return null;
             }
+            doorSfx.Stop();
             
             // render info text
             petName.text = WebUtility.HtmlDecode(animal.Name);
