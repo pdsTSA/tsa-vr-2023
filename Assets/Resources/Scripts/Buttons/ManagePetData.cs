@@ -7,6 +7,7 @@ using Resources.Scripts.Core;
 using Resources.Scripts.Events.Data;
 using Resources.Scripts.Events.Interfaces;
 using TMPro;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.Networking;
 using UnityEngine.UI;
@@ -47,12 +48,18 @@ namespace Resources.Scripts.Buttons
         public AudioSource buttonSfx;
         public AudioSource doorSfx;
 
+        public OpenInBrowser openUrl;
+        
+        
         private void Start()
         {
             belt.move = false;
             frontDoor.open = false;
             frontDoor.open = false;
             petImage.enabled = false;
+
+            openUrl.gameObject.SetActive(false);
+            openUrl.Url = "";
         }
 
         public void OnDisplayPet(PetDisplayData data)
@@ -233,7 +240,10 @@ namespace Resources.Scripts.Buttons
                                                     $"Telephone-\n{(string.IsNullOrEmpty(animal.Contact.Phone) ? "Not given" : animal.Contact.Phone)}\n\n" +
                                                     $"Shelter Location-\n{animal.Contact.Address.City}, {animal.Contact.Address.State} {animal.Contact.Address.Postcode}\n\n" +
                                                     $"Distance From You-\n{animal.Distance} miles");
-
+            
+            openUrl.gameObject.SetActive(true);
+            openUrl.Url = animal.Url;
+            
             petCount.text = $"#{_index + 1} / {_animals.Count}";
 
             // make web request for image and render that too
@@ -280,6 +290,9 @@ namespace Resources.Scripts.Buttons
             petContact.text = "";
             petContactLabel.text = "";
             petCount.text = "";
+            
+            openUrl.gameObject.SetActive(false);
+            openUrl.Url = "";
             
             //wait for a bit so it doesn't immediately check movement
             yield return new WaitForSeconds(0.2f);
