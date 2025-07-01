@@ -1,4 +1,7 @@
+using Oculus.Platform;
+using UnityEditor;
 using UnityEngine;
+using Application = UnityEngine.Application;
 
 namespace Resources.Scripts.Buttons
 {
@@ -8,7 +11,10 @@ namespace Resources.Scripts.Buttons
 
         public void Open()
         {
-            if (!string.IsNullOrEmpty(Url)) Application.OpenURL("https://" + Url);
+            if (!string.IsNullOrEmpty(Url))
+            {
+                Application.OpenURL("https://" + Url);
+            }
         }
     }
 }

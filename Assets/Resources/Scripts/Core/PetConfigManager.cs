@@ -13,7 +13,7 @@ namespace Resources.Scripts.Core
         private string _kids;
         private string _animals;
         private string _trained;
-        private string _zipcode = "30092";
+        private string _zipcode = "";
 
         public void OnUpdatePetConfig(UpdatePetConfigEventData data)
         {

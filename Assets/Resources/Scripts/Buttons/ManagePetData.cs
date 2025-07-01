@@ -141,6 +141,10 @@ namespace Resources.Scripts.Buttons
                         sprite.transform.localScale = new Vector3(0.55f, 0.55f, 0.55f);
                         sprite.transform.position = new Vector3(-0.75f, y * 0.55f, 0.2f);
                         break;
+                    default:
+                        sprite.transform.localScale = new Vector3(0.35f, 0.35f, 0.35f);
+                        sprite.transform.position = new Vector3(-0.75f, y * 0.35f, 0.2f);
+                        break;
                 }
 
                 foreach(var rend in sprite.GetComponentsInChildren<Renderer>(true))
@@ -171,6 +175,10 @@ namespace Resources.Scripts.Buttons
                     case "xlarge":
                         sprite.transform.localScale = new Vector3(0.4f, 0.4f, 0.4f);
                         sprite.transform.position = new Vector3(-0.75f, y * 0.4f, 0.2f);
+                        break;
+                    default:
+                        sprite.transform.localScale = new Vector3(0.3f, 0.3f, 0.3f);
+                        sprite.transform.position = new Vector3(-0.75f, y * 0.3f, 0.2f);
                         break;
                 }
                 
@@ -282,6 +290,8 @@ namespace Resources.Scripts.Buttons
             frontDoor.open = true;
             backDoor.open = true;
             
+            doorSfx.Play();
+            
             petImage.enabled = false;
             petName.text = "";
             petTags.text = "";
@@ -303,7 +313,11 @@ namespace Resources.Scripts.Buttons
                 yield return null;
             }
             
+            doorSfx.Pause();
+            
             belt.move = true;
+            
+            beltSfx.Play();
             
             while (_currentAnimal.transform.position.z > -3.7)
             {
@@ -316,6 +330,9 @@ namespace Resources.Scripts.Buttons
             frontDoor.open = false;
             backDoor.open = false;
             
+            beltSfx.Stop();
+            doorSfx.UnPause();
+            
             //wait for a bit so it doesn't immediately check movement
             yield return new WaitForSeconds(0.2f);
             
@@ -324,6 +341,8 @@ namespace Resources.Scripts.Buttons
             {
                 yield return null;
             }
+            
+            doorSfx.Stop();
             
             petName.text = "No Results Found";
             Destroy(_currentAnimal);
